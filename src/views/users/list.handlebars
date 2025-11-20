@@ -1,0 +1,28 @@
+<h2>Lista de Usuários</h2>
+
+<a href="/users/new" class="btn">Adicionar Novo Usuário</a>
+
+<table>
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each users}}
+        <tr>
+            <td>{{this.name}}</td>
+            <td>{{this.email}}</td>
+            <td>
+                <a href="/users/{{this.id}}/edit">Editar</a>
+                <form action="/users/{{this.id}}?_method=DELETE" method="POST" style="display:inline">
+                    <button type="submit">Excluir</button>
+                </form>
+                <a href="/users/{{this.id}}/history">Histórico</a>
+            </td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>

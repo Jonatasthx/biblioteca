@@ -1,0 +1,32 @@
+<h2>Histórico de Empréstimos — {{user.name}}</h2>
+
+<a href="/users" class="btn">Voltar para Usuários</a>
+
+<table>
+    <thead>
+        <tr>
+            <th>Livro</th>
+            <th>Data de Saída</th>
+            <th>Data de Devolução Prevista</th>
+            <th>Devolvido?</th>
+            <th>Data da Devolução</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each loans}}
+        <tr>
+            <td>{{this.bookTitle}}</td>
+            <td>{{formatDate this.dateOut}}</td>
+            <td>{{formatDate this.dueDate}}</td>
+            <td>{{#if this.returned}}Sim{{else}}Não{{/if}}</td>
+            <td>
+                {{#if this.dateReturned}}
+                    {{formatDate this.dateReturned}}
+                {{else}}
+                    —
+                {{/if}}
+            </td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
