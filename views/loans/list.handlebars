@@ -1,0 +1,35 @@
+<h2>Lista de Empréstimos</h2>
+
+<a href="/loans/new" class="btn">Novo Empréstimo</a>
+
+<table>
+    <thead>
+        <tr>
+            <th>Usuário</th>
+            <th>Livro</th>
+            <th>Data de Saída</th>
+            <th>Data de Devolução</th>
+            <th>Status</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each loans}}
+        <tr>
+            <td>{{this.userName}}</td>
+            <td>{{this.bookTitle}}</td>
+            <td>{{formatDate this.dateOut}}</td>
+            <td>{{formatDate this.dueDate}}</td>
+
+            <td>{{#if this.returned}}Devolvido{{else}}Pendente{{/if}}</td>
+            <td>
+                {{#unless this.returned}}
+                <form action="/loans/{{this.id}}/return?_method=PUT" method="POST" style="display:inline">
+                    <button type="submit">Registrar Devolução</button>
+                </form>
+                {{/unless}}
+            </td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
