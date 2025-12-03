@@ -1,21 +1,21 @@
-<h1>Novo Empréstimo</h1>
+<h2>Novo Empréstimo</h2>
 
 <form action="/loans" method="POST">
-
-  <label>Usuário:</label>
-  <select name="userId">
+  <label>Usuário</label>
+  <select name="UserId" required>
+    <option value="">Selecione...</option>
     {{#each users}}
       <option value="{{this.id}}">{{this.name}}</option>
     {{/each}}
   </select>
 
-  <label>Livro:</label>
-  <select name="bookId">
+  <label>Livro</label>
+  <select name="BookId" required>
+    <option value="">Selecione...</option>
     {{#each books}}
       <option value="{{this.id}}">{{this.title}}</option>
     {{/each}}
   </select>
 
-  <button type="submit">Registrar Empréstimo</button>
-
+  <button type="submit">Salvar</button>
 </form>

@@ -6,11 +6,36 @@ const Book = db.define('Book', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  year: DataTypes.INTEGER,
+
+  total: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 1,
+  },
+
   available: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true,
-  }
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 1,
+  },
+
+  AuthorId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+
+  CategoryId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+
+  PublisherId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+
+  year: DataTypes.INTEGER
 });
 
 module.exports = Book;
+

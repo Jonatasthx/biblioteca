@@ -5,10 +5,7 @@ const exphbs = require('express-handlebars');
 const db = require('./config/database');
 
 // Models
-const Book = require('./models/Book');
-const User = require('./models/User');
-const Loan = require('./models/Loan');
-
+const { Book, Author, Category, Publisher, User, Loan } = require('./models');
 
 
 const app = express();
@@ -39,8 +36,6 @@ app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 
 
-
-
 app.get('/', (req, res) => {
   res.render('home');
 });
@@ -48,12 +43,20 @@ app.get('/', (req, res) => {
 // ROTAS — BOOKS
 
 app.get('/books', async (req, res) => {
-  const books = await Book.findAll({ raw: true});
+  const books = await Book.findAll({
+    include: [Author, Category, Publisher]
+  });
+
   res.render('books/list', { books });
 });
 
-app.get('/books/new', (req, res) => {
-  res.render('books/new');
+
+app.get('/books/new', async (req, res) => {
+  const authors = await Author.findAll();
+  const categories = await Category.findAll();
+  const publishers = await Publisher.findAll();
+
+  res.render('books/new', { authors, categories, publishers });
 });
 
 app.post('/books', async (req, res) => {
@@ -63,7 +66,12 @@ app.post('/books', async (req, res) => {
 
 app.get('/books/:id/edit', async (req, res) => {
   const book = await Book.findByPk(req.params.id);
-  res.render('books/edit', { book });
+
+  const authors = await Author.findAll();
+  const categories = await Category.findAll();
+  const publishers = await Publisher.findAll();
+
+  res.render('books/edit', { book, authors, categories, publishers });
 });
 
 app.put('/books/:id', async (req, res) => {
@@ -75,6 +83,7 @@ app.delete('/books/:id', async (req, res) => {
   await Book.destroy({ where: { id: req.params.id } });
   res.redirect('/books');
 });
+
 
 
 // ROTAS — USERS
@@ -122,35 +131,88 @@ app.get('/users/:id/history', async (req, res) => {
 // ROTAS — LOANS
 
 
-app.get('/loans', async (req, res) => {
-  const loans = await Loan.findAll({ include: [User, Book] });
-  res.render('loans/list', { loans });
+// LISTAR TODOS OS EMPRÉSTIMOS
+
+app.post('/loans', async (req, res) => {
+  console.log(">>> BODY QUE CHEGOU NO POST /loans:");
+  console.log(req.body);
+
+  try {
+    const loan = await Loan.create({
+      UserId: req.body.UserId,
+      BookId: req.body.BookId,
+      loanDate: req.body.loanDate || new Date(),
+      returnDate: req.body.returnDate || null
+    });
+
+    console.log(">>> LOAN CRIADO:");
+    console.log(loan.toJSON());
+
+    res.redirect('/loans');
+  } catch (err) {
+    console.error(">>> ERRO AO CRIAR LOAN:");
+    console.error(err);
+    res.send("Erro ao criar empréstimo");
+  }
 });
 
+
+
+// FORMULÁRIO DE NOVO EMPRÉSTIMO
 app.get('/loans/new', async (req, res) => {
   const users = await User.findAll();
   const books = await Book.findAll();
+
   res.render('loans/new', { users, books });
 });
 
+
+// CRIAR EMPRÉSTIMO
 app.post('/loans', async (req, res) => {
-  await Loan.create(req.body);
+  await Loan.create({
+    UserId: req.body.UserId,
+    BookId: req.body.BookId,
+    loanDate: req.body.loanDate || new Date(),
+    returnDate: req.body.returnDate || null
+  });
+
   res.redirect('/loans');
 });
 
-app.put('/loans/:id/return', async (req, res) => {
-  await Loan.update(
-    { returned: true },
-    { where: { id: req.params.id } }
-  );
+
+// FORMULÁRIO DE EDIÇÃO
+app.get('/loans/:id/edit', async (req, res) => {
+  const loan = await Loan.findByPk(req.params.id);
+  const users = await User.findAll();
+  const books = await Book.findAll();
+
+  res.render('loans/edit', { loan, users, books });
+});
+
+
+// ATUALIZAR EMPRÉSTIMO
+app.put('/loans/:id', async (req, res) => {
+  await Loan.update(req.body, {
+    where: { id: req.params.id }
+  });
+
   res.redirect('/loans');
 });
+
+
+// DELETAR EMPRÉSTIMO
+app.delete('/loans/:id', async (req, res) => {
+  await Loan.destroy({
+    where: { id: req.params.id }
+  });
+
+  res.redirect('/loans');
+});
+
 
 
 // CRUD — CATEGORIES
 
-
-const Category = require('./models/Category');
 
 app.get('/categories', async (req, res) => {
   const categories = await Category.findAll();
@@ -185,8 +247,6 @@ app.delete('/categories/:id', async (req, res) => {
 // CRUD — AUTHORS
 
 
-const Author = require('./models/Author');
-
 app.get('/authors', async (req, res) => {
   const authors = await Author.findAll({ raw: true});
   res.render('authors/list', { authors });
@@ -220,8 +280,6 @@ app.delete('/authors/:id', async (req, res) => {
 // CRUD — PUBLISHERS
 
 
-const Publisher = require('./models/Publisher');
-
 app.get('/publishers', async (req, res) => {
   const publishers = await Publisher.findAll({ raw: true });
   res.render('publishers/list', { publishers });
@@ -250,7 +308,6 @@ app.delete('/publishers/:id', async (req, res) => {
   await Publisher.destroy({ where: { id: req.params.id } });
   res.redirect('/publishers');
 });
-
 
 
 db.sync().then(() => {
