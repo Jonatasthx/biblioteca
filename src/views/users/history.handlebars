@@ -15,7 +15,7 @@
     <tbody>
         {{#each loans}}
         <tr>
-            <td>{{this.bookTitle}}</td>
+            <td>{{this.Book.title}}</td>
             <td>{{formatDate this.dateOut}}</td>
             <td>{{formatDate this.dueDate}}</td>
             <td>{{#if this.returned}}Sim{{else}}Não{{/if}}</td>
@@ -30,3 +30,4 @@
         {{/each}}
     </tbody>
 </table>
+

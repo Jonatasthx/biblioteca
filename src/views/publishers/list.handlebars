@@ -1,0 +1,47 @@
+<h2>Lista de Editoras</h2>
+
+<a href="/publishers/new" class="btn add-btn">Adicionar Nova Editora</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each publishers}}
+        <tr>
+            <td>{{this.name}}</td>
+            <td>
+                <a href="/publishers/{{this.id}}/edit" class="link-edit">Editar</a>
+                <form action="/publishers/{{this.id}}?_method=DELETE" method="POST" class="inline">
+                    <button type="submit" class="btn delete-btn">Excluir</button>
+                </form>
+            </td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
+
+<style>
+    .add-btn {
+        display: inline-block;
+        margin-bottom: 15px;
+        background-color: #27ae60;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 5px;
+        text-decoration: none;
+    }
+    .inline { display: inline; }
+    .delete-btn {
+        background-color: #c0392b;
+        color: white;
+        padding: 6px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .delete-btn:hover { background-color: #922b21; }
+</style>

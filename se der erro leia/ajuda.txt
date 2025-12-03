@@ -1,0 +1,3 @@
+Caso ocorra algum erro relacionado às dependências, entre na pasta src e execute:
+
+npm install

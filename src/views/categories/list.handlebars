@@ -1,0 +1,15 @@
+<h1>Categorias</h1>
+
+<a href="/categories/new">Nova Categoria</a>
+
+<ul>
+  {{#each categories}}
+    <li>
+      {{this.name}}
+      <a href="/categories/{{this.id}}/edit">Editar</a>
+      <form action="/categories/{{this.id}}?_method=DELETE" method="POST" style="display:inline;">
+        <button type="submit">Excluir</button>
+      </form>
+    </li>
+  {{/each}}
+</ul>

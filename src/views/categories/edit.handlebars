@@ -1,0 +1,7 @@
+<h1>Editar Categoria</h1>
+
+<form action="/categories/{{category.id}}?_method=PUT" method="POST">
+  <label>Nome:</label>
+  <input type="text" name="name" value="{{category.name}}" required>
+  <button>Salvar</button>
+</form>

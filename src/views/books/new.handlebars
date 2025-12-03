@@ -1,0 +1,55 @@
+<h2>Novo Livro</h2>
+
+<form action="/books" method="POST" class="form-container" id="bookForm">
+  <div class="form-group">
+    <label for="title">Título</label>
+    <input type="text" id="title" name="title" required>
+  </div>
+
+  <div class="form-group">
+    <label for="author">Autor</label>
+    <input type="text" id="author" name="author" required>
+  </div>
+
+  <div class="form-group">
+    <label for="total">Total</label>
+    <input type="number" id="total" name="total" min="0" value="1" required>
+  </div>
+
+  <div class="form-group">
+    <label for="available">Disponíveis</label>
+    <input type="number" id="available" name="available" min="0" value="1" required>
+  </div>
+
+  <button type="submit" class="btn">Salvar</button>
+</form>
+
+<style>
+  /* mantém o estilo já usado — cole se quiser */
+  .form-container{max-width:500px;margin:20px auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 5px #00000022}
+  .form-group{margin-bottom:15px}
+  label{display:block;margin-bottom:5px;font-weight:600}
+  input{width:100%;padding:8px;border:1px solid #ccc;border-radius:4px}
+  .btn{background:#2980b9;color:#fff;padding:10px;border:none;width:100%;border-radius:5px;cursor:pointer;font-size:16px}
+  .btn:hover{background:#1c6690}
+</style>
+
+<script>
+  (function(){
+    const totalEl = document.getElementById('total');
+    const availEl = document.getElementById('available');
+    const form = document.getElementById('bookForm');
+
+    totalEl.addEventListener('input', () => {
+      const t = parseInt(totalEl.value || 0, 10);
+      const a = parseInt(availEl.value || 0, 10);
+      if (!availEl.value || a > t) availEl.value = t;
+    });
+
+    form.addEventListener('submit', (ev) => {
+      const t = parseInt(totalEl.value || 0, 10);
+      const a = parseInt(availEl.value || 0, 10);
+      if (a > t) { ev.preventDefault(); alert('Disponíveis não pode ser maior que Total.'); }
+    });
+  })();
+</script>

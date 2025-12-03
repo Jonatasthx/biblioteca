@@ -1,0 +1,32 @@
+<h2>Nova Editora</h2>
+
+<form action="/publishers" method="POST" class="form-container">
+    <div class="form-group">
+        <label for="name">Nome da Editora</label>
+        <input type="text" id="name" name="name" required>
+    </div>
+
+    <button type="submit" class="btn">Salvar</button>
+</form>
+
+<style>
+    .form-container {
+        max-width: 500px;
+        margin: 20px auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px #00000022;
+    }
+    .form-group { margin-bottom: 15px; }
+    label { font-weight: 600; }
+    .btn {
+        background-color: #27ae60;
+        color: white;
+        padding: 10px;
+        border: none;
+        width: 100%;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+</style>

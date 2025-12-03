@@ -1,0 +1,38 @@
+<h2>Editar Autor</h2>
+
+<form action="/authors/{{author.id}}?_method=PUT" method="POST" class="form-container">
+    <div class="form-group">
+        <label for="name">Nome do Autor</label>
+        <input
+            type="text"
+            id="name"
+            name="name"
+            value="{{author.name}}"
+            required
+        >
+    </div>
+
+    <button type="submit" class="btn">Salvar Alterações</button>
+</form>
+
+<style>
+    .form-container {
+        max-width: 500px;
+        margin: 20px auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px #00000022;
+    }
+    .form-group { margin-bottom: 15px; }
+    label { font-weight: 600; }
+    .btn {
+        background-color: #2980b9;
+        color: white;
+        padding: 10px;
+        border: none;
+        width: 100%;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+</style>

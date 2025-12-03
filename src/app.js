@@ -1,205 +1,271 @@
 const express = require('express');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
 const methodOverride = require('method-override');
 const exphbs = require('express-handlebars');
+const db = require('./config/database');
+
+// Models
+const Book = require('./models/Book');
+const User = require('./models/User');
+const Loan = require('./models/Loan');
+
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configs
-app.use(express.urlencoded({ extended: true })); // form body
+// Middlewares
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Handlebars setup
-app.engine('handlebars', exphbs.create({
-  defaultLayout: 'main',
+
+// Handlebars
+const hbs = exphbs.create({
+  runtimeOptions: {
+    allowProtoPropertiesByDefault: true,
+    allowProtoMethodsByDefault: true,
+  },
   helpers: {
-    formatDate: (iso) => {
-      if (!iso) return '';
-      const d = new Date(iso);
-      return d.toLocaleDateString('pt-BR');
-    },
-    isOverdue: (dueDate, returned) => {
-      if (returned) return false;
-      if (!dueDate) return false;
-      const now = new Date();
-      return new Date(dueDate) < now;
-    },
+    formatDate(date) {
+      if (!date) return '—';
+      return new Date(date).toLocaleDateString('pt-BR');
+    }
   }
-}).engine);
-app.set('view engine', 'handlebars');
-app.set('views', path.join(__dirname, 'views'));
-
-// ----------------------
-// Dados em memória (para início rápido)
-// Troque por banco quando quiser (SQLite, Mongo, PostgreSQL...)
-// ----------------------
-let books = [
-  { id: uuidv4(), title: 'Dom Casmurro', author: 'Machado de Assis', total: 3, available: 3 },
-  { id: uuidv4(), title: 'O Pequeno Príncipe', author: 'Antoine de Saint-Exupéry', total: 2, available: 2 }
-];
-
-let users = [
-  { id: uuidv4(), name: 'Maria', email: 'maria@comunitaria.org' },
-  { id: uuidv4(), name: 'João', email: 'joao@comunitaria.org' }
-];
-
-let loans = [
-  // { id, userId, bookId, dateOut, dueDate, returned, dateReturned }
-];
-
-// ----------------------
-// Rotas principais
-// ----------------------
-app.get('/', (req, res) => {
-  res.redirect('/books');
 });
 
-// ----- BOOKS CRUD -----
-app.get('/books', (req, res) => {
+app.engine('handlebars', hbs.engine);
+app.set('view engine', 'handlebars');
+
+
+
+
+app.get('/', (req, res) => {
+  res.render('home');
+});
+
+// ROTAS — BOOKS
+
+app.get('/books', async (req, res) => {
+  const books = await Book.findAll({ raw: true});
   res.render('books/list', { books });
 });
 
 app.get('/books/new', (req, res) => {
-  res.render('books/form', { book: {} });
+  res.render('books/new');
 });
 
-app.post('/books', (req, res) => {
-  const { title, author, total } = req.body;
-  const totalNum = parseInt(total, 10) || 1;
-  const b = { id: uuidv4(), title, author, total: totalNum, available: totalNum };
-  books.push(b);
+app.post('/books', async (req, res) => {
+  await Book.create(req.body);
   res.redirect('/books');
 });
 
-app.get('/books/:id/edit', (req, res) => {
-  const book = books.find(b => b.id === req.params.id);
-  if (!book) return res.status(404).send('Livro não encontrado');
-  res.render('books/form', { book });
+app.get('/books/:id/edit', async (req, res) => {
+  const book = await Book.findByPk(req.params.id);
+  res.render('books/edit', { book });
 });
 
-app.put('/books/:id', (req, res) => {
-  const book = books.find(b => b.id === req.params.id);
-  if (!book) return res.status(404).send('Livro não encontrado');
-  const { title, author, total } = req.body;
-  const totalNum = parseInt(total, 10) || book.total;
-  // ajustar disponibilidade quando total muda
-  const diff = totalNum - book.total;
-  book.title = title;
-  book.author = author;
-  book.total = totalNum;
-  book.available = Math.max(0, book.available + diff);
+app.put('/books/:id', async (req, res) => {
+  await Book.update(req.body, { where: { id: req.params.id } });
   res.redirect('/books');
 });
 
-app.delete('/books/:id', (req, res) => {
-  // evitar deletar livro que está emprestado
-  const hasLoanActive = loans.some(l => l.bookId === req.params.id && !l.returned);
-  if (hasLoanActive) {
-    return res.status(400).send('Não é possível excluir: existe empréstimo ativo deste livro.');
-  }
-  books = books.filter(b => b.id !== req.params.id);
+app.delete('/books/:id', async (req, res) => {
+  await Book.destroy({ where: { id: req.params.id } });
   res.redirect('/books');
 });
 
-// ----- USERS CRUD -----
-app.get('/users', (req, res) => {
+
+// ROTAS — USERS
+
+app.get('/users', async (req, res) => {
+  const users = await User.findAll({ raw: true});
   res.render('users/list', { users });
 });
 
 app.get('/users/new', (req, res) => {
-  res.render('users/form', { user: {} });
+  res.render('users/new');
 });
 
-app.post('/users', (req, res) => {
-  const { name, email } = req.body;
-  users.push({ id: uuidv4(), name, email });
+app.post('/users', async (req, res) => {
+  await User.create(req.body);
   res.redirect('/users');
 });
 
-app.get('/users/:id/edit', (req, res) => {
-  const user = users.find(u => u.id === req.params.id);
+app.get('/users/:id/edit', async (req, res) => {
+  const user = await User.findByPk(req.params.id);
+  res.render('users/edit', { user });
+});
+
+app.put('/users/:id', async (req, res) => {
+  await User.update(req.body, { where: { id: req.params.id } });
+  res.redirect('/users');
+});
+
+app.delete('/users/:id', async (req, res) => {
+  await User.destroy({ where: { id: req.params.id } });
+  res.redirect('/users');
+});
+
+// Histórico
+app.get('/users/:id/history', async (req, res) => {
+  const user = await User.findByPk(req.params.id);
   if (!user) return res.status(404).send('Usuário não encontrado');
-  res.render('users/form', { user });
+
+  const loans = await Loan.findAll({ where: { userId: user.id } });
+
+  res.render('users/history', { user, loans });
 });
 
-app.put('/users/:id', (req, res) => {
-  const user = users.find(u => u.id === req.params.id);
-  if (!user) return res.status(404).send('Usuário não encontrado');
-  const { name, email } = req.body;
-  user.name = name;
-  user.email = email;
-  res.redirect('/users');
+
+// ROTAS — LOANS
+
+
+app.get('/loans', async (req, res) => {
+  const loans = await Loan.findAll({ include: [User, Book] });
+  res.render('loans/list', { loans });
 });
 
-app.delete('/users/:id', (req, res) => {
-  // evitar excluir usuário com empréstimo ativo
-  const hasLoanActive = loans.some(l => l.userId === req.params.id && !l.returned);
-  if (hasLoanActive) {
-    return res.status(400).send('Não é possível excluir: usuário possui empréstimos ativos.');
-  }
-  users = users.filter(u => u.id !== req.params.id);
-  res.redirect('/users');
+app.get('/loans/new', async (req, res) => {
+  const users = await User.findAll();
+  const books = await Book.findAll();
+  res.render('loans/new', { users, books });
 });
 
-// ----- LOANS / EMPRÉSTIMOS -----
-app.get('/loans', (req, res) => {
-  // enriquecer com infos de usuário e livro + status de atraso
-  const enriched = loans.map(l => {
-    const user = users.find(u => u.id === l.userId) || { name: '—' };
-    const book = books.find(b => b.id === l.bookId) || { title: '—' };
-    return { ...l, userName: user.name, bookTitle: book.title };
-  });
-  res.render('loans/list', { loans: enriched });
-});
-
-app.get('/loans/new', (req, res) => {
-  // só permite emprestar quando existem livros disponíveis
-  const availableBooks = books.filter(b => b.available > 0);
-  res.render('loans/form', { users, books: availableBooks });
-});
-
-app.post('/loans', (req, res) => {
-  const { userId, bookId, days } = req.body;
-  const book = books.find(b => b.id === bookId);
-  if (!book || book.available <= 0) return res.status(400).send('Livro indisponível');
-  const daysNum = parseInt(days, 10) || 7;
-  const dateOut = new Date();
-  const dueDate = new Date(dateOut);
-  dueDate.setDate(dueDate.getDate() + daysNum);
-  const loan = { id: uuidv4(), userId, bookId, dateOut: dateOut.toISOString(), dueDate: dueDate.toISOString(), returned: false, dateReturned: null };
-  loans.push(loan);
-  book.available -= 1;
+app.post('/loans', async (req, res) => {
+  await Loan.create(req.body);
   res.redirect('/loans');
 });
 
-app.put('/loans/:id/return', (req, res) => {
-  const loan = loans.find(l => l.id === req.params.id);
-  if (!loan) return res.status(404).send('Empréstimo não encontrado');
-  if (loan.returned) return res.redirect('/loans');
-  loan.returned = true;
-  loan.dateReturned = new Date().toISOString();
-  const book = books.find(b => b.id === loan.bookId);
-  if (book) book.available = Math.min(book.total, book.available + 1);
+app.put('/loans/:id/return', async (req, res) => {
+  await Loan.update(
+    { returned: true },
+    { where: { id: req.params.id } }
+  );
   res.redirect('/loans');
 });
 
-// Histórico por usuário
-app.get('/users/:id/history', (req, res) => {
-  const user = users.find(u => u.id === req.params.id);
-  if (!user) return res.status(404).send('Usuário não encontrado');
-  const userLoans = loans.filter(l => l.userId === req.params.id).map(l => {
-    const book = books.find(b => b.id === l.bookId) || {};
-    return { ...l, bookTitle: book.title };
-  });
-  res.render('users/history', { user, loans: userLoans });
+
+// CRUD — CATEGORIES
+
+
+const Category = require('./models/Category');
+
+app.get('/categories', async (req, res) => {
+  const categories = await Category.findAll();
+  res.render('categories/list', { categories });
+});
+
+app.get('/categories/new', (req, res) => {
+  res.render('categories/new');
+});
+
+app.post('/categories', async (req, res) => {
+  await Category.create(req.body);
+  res.redirect('/categories');
+});
+
+app.get('/categories/:id/edit', async (req, res) => {
+  const category = await Category.findByPk(req.params.id);
+  res.render('categories/edit', { category });
+});
+
+app.put('/categories/:id', async (req, res) => {
+  await Category.update(req.body, { where: { id: req.params.id } });
+  res.redirect('/categories');
+});
+
+app.delete('/categories/:id', async (req, res) => {
+  await Category.destroy({ where: { id: req.params.id } });
+  res.redirect('/categories');
 });
 
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`);
+// CRUD — AUTHORS
+
+
+const Author = require('./models/Author');
+
+app.get('/authors', async (req, res) => {
+  const authors = await Author.findAll({ raw: true});
+  res.render('authors/list', { authors });
+});
+
+app.get('/authors/new', (req, res) => {
+  res.render('authors/new');
+});
+
+app.post('/authors', async (req, res) => {
+  await Author.create(req.body);
+  res.redirect('/authors');
+});
+
+app.get('/authors/:id/edit', async (req, res) => {
+  const author = await Author.findByPk(req.params.id);
+  res.render('authors/edit', { author });
+});
+
+app.put('/authors/:id', async (req, res) => {
+  await Author.update(req.body, { where: { id: req.params.id } });
+  res.redirect('/authors');
+});
+
+app.delete('/authors/:id', async (req, res) => {
+  await Author.destroy({ where: { id: req.params.id } });
+  res.redirect('/authors');
+});
+
+
+// CRUD — PUBLISHERS
+
+
+const Publisher = require('./models/Publisher');
+
+app.get('/publishers', async (req, res) => {
+  const publishers = await Publisher.findAll({ raw: true });
+  res.render('publishers/list', { publishers });
+});
+
+app.get('/publishers/new', (req, res) => {
+  res.render('publishers/new');
+});
+
+app.post('/publishers', async (req, res) => {
+  await Publisher.create(req.body);
+  res.redirect('/publishers');
+});
+
+app.get('/publishers/:id/edit', async (req, res) => {
+  const publisher = await Publisher.findByPk(req.params.id);
+  res.render('publishers/edit', { publisher });
+});
+
+app.put('/publishers/:id', async (req, res) => {
+  await Publisher.update(req.body, { where: { id: req.params.id } });
+  res.redirect('/publishers');
+});
+
+app.delete('/publishers/:id', async (req, res) => {
+  await Publisher.destroy({ where: { id: req.params.id } });
+  res.redirect('/publishers');
+});
+
+
+
+db.sync().then(() => {
+  console.log('Banco sincronizado.');
+  app.listen(PORT, () => {
+    console.log(`     
+ ⣀⣤⣤⣤⣀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣀
+⣼⣿⣿⣿⣿⣿⣷⡆⢰⣾⣿⣿⣿⣿⣿⣇
+⣿⣿⣿⣿⣿⣿⣿⡇⢸⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⡇⢸⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⡇⢸⣿⣿⣿⣿⣿⣿⣿    Bem vindo(a), mestre!
+⠛⠛⠛⠿⠿⣿⣿⡇⢸⣿⣿⠿⠿⠛⠛⠛        
+⠙⠓⠒⠶⠦⣄⡉⠃⠘⢉⣠⠴⠶⠒⠚⠋
+⠀⠀⠀⠀⠀⠀⠀⠉⠃⠃⠉⠀⠀⠀⠀⠀
+ 
+Servidor rodando em http://localhost:${PORT}`);
+  });
 });
