@@ -129,33 +129,14 @@ app.get('/users/:id/history', async (req, res) => {
 
 
 // ROTAS — LOANS
-
-
 // LISTAR TODOS OS EMPRÉSTIMOS
+app.get('/loans', async (req, res) => {
+  const loans = await Loan.findAll({
+    include: [User, Book]
+  });
 
-app.post('/loans', async (req, res) => {
-  console.log(">>> BODY QUE CHEGOU NO POST /loans:");
-  console.log(req.body);
-
-  try {
-    const loan = await Loan.create({
-      UserId: req.body.UserId,
-      BookId: req.body.BookId,
-      loanDate: req.body.loanDate || new Date(),
-      returnDate: req.body.returnDate || null
-    });
-
-    console.log(">>> LOAN CRIADO:");
-    console.log(loan.toJSON());
-
-    res.redirect('/loans');
-  } catch (err) {
-    console.error(">>> ERRO AO CRIAR LOAN:");
-    console.error(err);
-    res.send("Erro ao criar empréstimo");
-  }
+  res.render('loans/list', { loans });
 });
-
 
 
 // FORMULÁRIO DE NOVO EMPRÉSTIMO
@@ -208,7 +189,6 @@ app.delete('/loans/:id', async (req, res) => {
 
   res.redirect('/loans');
 });
-
 
 
 // CRUD — CATEGORIES
