@@ -1,16 +1,84 @@
 <h2>{{#if book.id}}Editar Livro{{else}}Adicionar Novo Livro{{/if}}</h2>
 
 <form action="{{#if book.id}}/books/{{book.id}}?_method=PUT{{else}}/books{{/if}}" method="POST">
-    <label for="title">Título:</label>
-    <input type="text" id="title" name="title" value="{{book.title}}" required>
 
-    <label for="author">Autor:</label>
-    <input type="text" id="author" name="author" value="{{book.author}}" required>
+  <label for="title">Título:</label>
+  <input
+    type="text"
+    id="title"
+    name="title"
+    value="{{book.title}}"
+    required
+  >
 
-    <label for="total">Total de cópias:</label>
-    <input type="number" id="total" name="total" value="{{book.total}}" min="1" required>
+  <label for="AuthorId">Autor:</label>
+  <select name="AuthorId" id="AuthorId" required>
+    <option value="" disabled {{#unless book.AuthorId}}selected{{/unless}}>
+      Selecione um autor
+    </option>
+    {{#each authors}}
+      <option
+        value="{{this.id}}"
+        {{#ifEquals this.id ../book.AuthorId}}selected{{/ifEquals}}
+      >
+        {{this.name}}
+      </option>
+    {{/each}}
+  </select>
 
-    <button type="submit">{{#if book.id}}Atualizar{{else}}Adicionar{{/if}}</button>
+  <label for="CategoryId">Categoria:</label>
+  <select name="CategoryId" id="CategoryId" required>
+    <option value="" disabled {{#unless book.CategoryId}}selected{{/unless}}>
+      Selecione uma categoria
+    </option>
+    {{#each categories}}
+      <option
+        value="{{this.id}}"
+        {{#ifEquals this.id ../book.CategoryId}}selected{{/ifEquals}}
+      >
+        {{this.name}}
+      </option>
+    {{/each}}
+  </select>
+
+  <label for="PublisherId">Editora:</label>
+  <select name="PublisherId" id="PublisherId" required>
+    <option value="" disabled {{#unless book.PublisherId}}selected{{/unless}}>
+      Selecione uma editora
+    </option>
+    {{#each publishers}}
+      <option
+        value="{{this.id}}"
+        {{#ifEquals this.id ../book.PublisherId}}selected{{/ifEquals}}
+      >
+        {{this.name}}
+      </option>
+    {{/each}}
+  </select>
+
+  <label for="total">Total de cópias:</label>
+  <input
+    type="number"
+    id="total"
+    name="total"
+    value="{{book.total}}"
+    min="1"
+    required
+  >
+
+  <label for="available">Disponíveis:</label>
+  <input
+    type="number"
+    id="available"
+    name="available"
+    value="{{book.available}}"
+    min="0"
+    required
+  >
+
+  <button type="submit">
+    {{#if book.id}}Atualizar{{else}}Adicionar{{/if}}
+  </button>
 </form>
 
 <a href="/books">Voltar para a lista</a>
