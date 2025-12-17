@@ -1,3 +1,3 @@
 Caso ocorra algum erro relacionado às dependências, entre na pasta src e execute:
 
-npm install
+npm i body-parser express express-handlebars method-override nodejs sequelize sqlite3 uuid

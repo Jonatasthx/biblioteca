@@ -2,27 +2,33 @@
 
 <a href="/users/new" class="btn">Adicionar Novo Usuário</a>
 
-<table>
-    <thead>
-        <tr>
-            <th>Nome</th>
-            <th>E-mail</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
+{{#if error}}
+  <p style="color: red; margin-top: 10px;">
+    {{error}}
+  </p>
+{{/if}}
 
-    <tbody>
-        {{#each users}}
-        <tr>
-            <td>{{this.name}}</td>
-            <td>{{this.email}}</td>
-            <td>
-                <a href="/users/{{this.id}}/edit">Editar</a>
-                <form action="/users/{{this.id}}?_method=DELETE" method="POST" style="display:inline;">
-                    <button type="submit">Excluir</button>
-                </form>
-            </td>
-        </tr>
-        {{/each}}
-    </tbody>
+<table>
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>E-mail</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {{#each users}}
+    <tr>
+      <td>{{this.name}}</td>
+      <td>{{this.email}}</td>
+      <td>
+        <a href="/users/{{this.id}}/edit">Editar</a>
+        <form action="/users/{{this.id}}?_method=DELETE" method="POST" style="display:inline;">
+          <button type="submit">Excluir</button>
+        </form>
+      </td>
+    </tr>
+    {{/each}}
+  </tbody>
 </table>

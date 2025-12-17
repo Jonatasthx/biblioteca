@@ -2,6 +2,10 @@
 
 <a href="/authors/new" class="btn add-btn">Adicionar Novo Autor</a>
 
+{{#if error}}
+  <p style="color:red;">{{error}}</p>
+{{/if}}
+
 <table class="table">
     <thead>
         <tr>

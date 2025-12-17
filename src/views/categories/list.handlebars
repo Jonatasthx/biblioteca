@@ -1,7 +1,9 @@
 <h1>Categorias</h1>
 
 <a href="/categories/new">Nova Categoria</a>
-
+{{#if error}}
+  <p style="color:red;">{{error}}</p>
+{{/if}}
 <ul>
   {{#each categories}}
     <li>

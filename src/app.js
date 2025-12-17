@@ -90,11 +90,27 @@ app.put('/books/:id', async (req, res) => {
 });
 
 app.delete('/books/:id', async (req, res) => {
-  console.log('[DELETE /books/:id] Deletando livro ID:', req.params.id);
-  await Book.destroy({ where: { id: req.params.id } });
-  console.log('[DELETE /books/:id] Livro deletado com sucesso');
-  res.redirect('/books');
-});
+  const id = req.params.id
+  console.log('[DELETE /books/:id] Tentativa de deletar livro ID:', id)
+
+  const loansCount = await Loan.count({
+    where: { BookId: id }
+  })
+
+  if (loansCount > 0) {
+    console.log('[DELETE /books/:id] Bloqueado: livro possui empréstimos')
+
+    const books = await Book.findAll()
+    return res.render('books/list', {
+      books,
+      error: 'Você não pode deletar um livro que está ou esteve em empréstimo.'
+    })
+  }
+
+  await Book.destroy({ where: { id } })
+  console.log('[DELETE /books/:id] Livro deletado com sucesso')
+  res.redirect('/books')
+})
 
 
 
@@ -136,11 +152,27 @@ app.put('/users/:id', async (req, res) => {
 });
 
 app.delete('/users/:id', async (req, res) => {
-  console.log('[DELETE /users/:id] Deletando usuário ID:', req.params.id);
-  await User.destroy({ where: { id: req.params.id } });
-  console.log('[DELETE /users/:id] Usuário deletado com sucesso');
-  res.redirect('/users');
-});
+  const id = req.params.id
+  console.log('[DELETE /users/:id] Tentativa de deletar usuário ID:', id)
+
+  const loansCount = await Loan.count({
+    where: { UserId: id }
+  })
+
+  if (loansCount > 0) {
+    console.log('[DELETE /users/:id] Bloqueado: usuário possui empréstimos ativos')
+
+    const users = await User.findAll()
+    return res.render('users/list', {
+      users,
+      error: 'Você não pode deletar um usuário com empréstimo ativo.'
+    })
+  }
+
+  await User.destroy({ where: { id } })
+  console.log('[DELETE /users/:id] Usuário deletado com sucesso')
+  res.redirect('/users')
+})
 
 // Histórico
 app.get('/users/:id/history', async (req, res) => {
@@ -157,7 +189,8 @@ app.get('/users/:id/history', async (req, res) => {
 
 
 // ROTAS — LOANS
-// LISTAR TODOS OS EMPRÉSTIMOS
+
+// LISTAR TODOS 
 app.get('/loans', async (req, res) => {
   console.log('[GET /loans] Listando empréstimos');
   const loans = await Loan.findAll({
@@ -323,12 +356,30 @@ app.put('/categories/:id', async (req, res) => {
   res.redirect('/categories');
 });
 
+// delete mais trabalhoso da minha vida
 app.delete('/categories/:id', async (req, res) => {
-  console.log('[DELETE /categories/:id] Deletando categoria ID:', req.params.id);
-  await Category.destroy({ where: { id: req.params.id } });
-  console.log('[DELETE /categories/:id] Categoria deletada com sucesso');
-  res.redirect('/categories');
-});
+  const id = req.params.id
+  console.log('[DELETE /categories/:id] Tentativa de deletar categoria ID:', id)
+
+  const booksCount = await Book.count({
+    where: { CategoryId: id }
+  })
+
+  if (booksCount > 0) {
+    console.log('[DELETE /categories/:id] Bloqueado: categoria possui livros')
+
+    const categories = await Category.findAll()
+    return res.render('categories/list', {
+      categories,
+      error: 'Você não pode deletar uma categoria que possui livros.'
+    })
+  }
+
+  await Category.destroy({ where: { id } })
+  console.log('[DELETE /categories/:id] Categoria deletada com sucesso')
+  res.redirect('/categories')
+})
+
 
 
 // CRUD — AUTHORS
@@ -370,11 +421,28 @@ app.put('/authors/:id', async (req, res) => {
 });
 
 app.delete('/authors/:id', async (req, res) => {
-  console.log('[DELETE /authors/:id] Deletando autor ID:', req.params.id);
-  await Author.destroy({ where: { id: req.params.id } });
-  console.log('[DELETE /authors/:id] Autor deletado com sucesso');
-  res.redirect('/authors');
-});
+  const id = req.params.id
+  console.log('[DELETE /authors/:id] Tentativa de deletar autor ID:', id)
+
+  const booksCount = await Book.count({
+    where: { AuthorId: id }
+  })
+
+  if (booksCount > 0) {
+    console.log('[DELETE /authors/:id] Bloqueado: autor possui livros')
+
+    const authors = await Author.findAll()
+    return res.render('authors/list', {
+      authors,
+      error: 'Você não pode deletar um autor que possui livros cadastrados.'
+    })
+  }
+
+  await Author.destroy({ where: { id } })
+  console.log('[DELETE /authors/:id] Autor deletado com sucesso')
+  res.redirect('/authors')
+})
+
 
 
 // CRUD — PUBLISHERS
@@ -416,11 +484,27 @@ app.put('/publishers/:id', async (req, res) => {
 });
 
 app.delete('/publishers/:id', async (req, res) => {
-  console.log('[DELETE /publishers/:id] Deletando editora ID:', req.params.id);
-  await Publisher.destroy({ where: { id: req.params.id } });
-  console.log('[DELETE /publishers/:id] Editora deletada com sucesso');
-  res.redirect('/publishers');
-});
+  const id = req.params.id
+  console.log('[DELETE /publishers/:id] Tentativa de deletar editora ID:', id)
+
+  const booksCount = await Book.count({
+    where: { PublisherId: id }
+  })
+
+  if (booksCount > 0) {
+    console.log('[DELETE /publishers/:id] Bloqueado: editora possui livros')
+
+    const publishers = await Publisher.findAll()
+    return res.render('publishers/list', {
+      publishers,
+      error: 'Você não pode deletar uma editora que possui livros cadastrados.'
+    })
+  }
+
+  await Publisher.destroy({ where: { id } })
+  console.log('[DELETE /publishers/:id] Editora deletada com sucesso')
+  res.redirect('/publishers')
+})
 
 
 db.sync().then(() => {
